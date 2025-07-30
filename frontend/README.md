@@ -10,7 +10,7 @@ A simple full-stack feed application built with Next.js where users can create p
 - ✅ Comment on posts (bonus feature)
 - ✅ Show/Hide comments functionality
 - ✅ Posts sorted by most recent
-- ✅ In-memory data storage
+- ✅ In-memory data storage (Data base operations are also saved)
 - ✅ Responsive design
 
 ## Tech Stack
@@ -127,3 +127,4 @@ The application uses in-memory storage via a global variable. This means:
 - Add real-time updates with WebSockets
 - Implement post categories or tags
 \`\`\`
+
