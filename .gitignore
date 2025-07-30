@@ -1,0 +1,67 @@
+# --- Global Node ---
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# --- Environment Files ---
+.env
+.env.local
+.env.*.local
+
+# --- Logs ---
+logs/
+*.log
+*.log.*
+
+# --- Build Output ---
+dist/
+.build/
+.next/
+out/
+
+# --- IDEs & Editors ---
+.vscode/
+.idea/
+*.sw?
+*.swo
+*.swn
+*.bak
+.DS_Store
+Thumbs.db
+
+# --- OS Files ---
+ehthumbs.db
+Icon?
+._*
+
+# --- TypeScript ---
+*.tsbuildinfo
+
+# --- Coverage ---
+coverage/
+.nyc_output/
+
+# --- NestJS Specific ---
+nestjs-debug.log
+tmp/
+.cache/
+
+# --- Next.js Specific ---
+.next/
+out/
+.next/cache/
+
+# --- Testing ---
+jest.config.ts
+coverage/
+test-results/
+
+# --- Misc ---
+*.tgz
+*.gz
+*.zip
+*.log
+yarn.lock
+package-lock.json
