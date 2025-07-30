@@ -16,7 +16,6 @@ export default function FeedPage() {
       const response = await fetch("/api/posts");
       const data = await response.json();
       if (data) {
-        console.log(data);
         setPosts(data);
       }
     } catch (error) {
@@ -52,7 +51,6 @@ export default function FeedPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      {/* Header */}
       <header className="bg-white shadow-sm border-b">
         <div className="container mx-auto px-4 py-6">
           <div className="flex items-center justify-center">
@@ -73,10 +71,8 @@ export default function FeedPage() {
         </div>
       </header>
 
-      {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-2xl mx-auto space-y-8">
-          {/* Create Post Section */}
           <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
             <CardHeader className="pb-4">
               <CardTitle className="text-xl font-semibold text-center text-gray-800">
@@ -88,7 +84,6 @@ export default function FeedPage() {
             </CardContent>
           </Card>
 
-          {/* Posts Section */}
           <div className="space-y-6">
             <div className="flex items-center justify-between">
               <h2 className="text-2xl font-bold text-gray-800">Recent Posts</h2>

@@ -1,8 +1,6 @@
 "use client";
 
-import type React from "react";
-
-import { useState } from "react";
+import React, { useState } from "react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -27,31 +25,57 @@ export function PostCard({ post, onPostUpdate }: PostCardProps) {
   const [newComment, setNewComment] = useState("");
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
 
+  // Local optimistic state for likes/dislikes
+  const [likedCount, setLikedCount] = useState(post.liked);
+  const [dislikedCount, setDislikedCount] = useState(post.disliked);
+
+  // Disable buttons while processing
+  const [isLiking, setIsLiking] = useState(false);
+  const [isDisliking, setIsDisliking] = useState(false);
+
   const handleLike = async () => {
+    if (isLiking) return;
+    setIsLiking(true);
+    setLikedCount((c) => c + 1);
+
     try {
-      const response = await fetch(`/api/posts/${post.id}/like`, {
-        method: "POST",
-      });
-      if (response.ok) {
-        const updatedPost = await response.json();
+      const res = await fetch(`/api/posts/${post.id}/like`, { method: "POST" });
+      if (res.ok) {
+        const updatedPost = await res.json();
+        setLikedCount(updatedPost.liked);
+        setDislikedCount(updatedPost.disliked);
         onPostUpdate(updatedPost);
+      } else {
+        setLikedCount((c) => c - 1);
       }
-    } catch (error) {
-      console.error("Error liking post:", error);
+    } catch {
+      setLikedCount((c) => c - 1);
+    } finally {
+      setIsLiking(false);
     }
   };
 
   const handleDislike = async () => {
+    if (isDisliking) return;
+    setIsDisliking(true);
+    setDislikedCount((c) => c + 1);
+
     try {
-      const response = await fetch(`/api/posts/${post.id}/dislike`, {
+      const res = await fetch(`/api/posts/${post.id}/dislike`, {
         method: "POST",
       });
-      if (response.ok) {
-        const updatedPost = await response.json();
+      if (res.ok) {
+        const updatedPost = await res.json();
+        setDislikedCount(updatedPost.disliked);
+        setLikedCount(updatedPost.liked);
         onPostUpdate(updatedPost);
+      } else {
+        setDislikedCount((c) => c - 1);
       }
-    } catch (error) {
-      console.error("Error disliking post:", error);
+    } catch {
+      setDislikedCount((c) => c - 1);
+    } finally {
+      setIsDisliking(false);
     }
   };
 
@@ -59,20 +83,15 @@ export function PostCard({ post, onPostUpdate }: PostCardProps) {
     e.preventDefault();
 
     if (!newComment.trim()) return;
-
     setIsSubmittingComment(true);
-
     try {
-      const response = await fetch(`/api/posts/${post.id}/comments`, {
+      const res = await fetch(`/api/posts/${post.id}/comments`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text: newComment.trim() }),
       });
-
-      if (response.ok) {
-        const updatedPost = await response.json();
+      if (res.ok) {
+        const updatedPost = await res.json();
         onPostUpdate(updatedPost);
         setNewComment("");
       }
@@ -121,20 +140,22 @@ export function PostCard({ post, onPostUpdate }: PostCardProps) {
               variant="ghost"
               size="sm"
               onClick={handleLike}
+              disabled={isLiking}
               className="flex items-center gap-2 hover:bg-green-50 hover:text-green-600 transition-colors group"
             >
               <ThumbsUp className="w-4 h-4 group-hover:scale-110 transition-transform" />
-              <span className="font-medium">{post.liked}</span>
+              <span className="font-medium">{likedCount}</span>
             </Button>
 
             <Button
               variant="ghost"
               size="sm"
               onClick={handleDislike}
+              disabled={isDisliking}
               className="flex items-center gap-2 hover:bg-red-50 hover:text-red-600 transition-colors group"
             >
               <ThumbsDown className="w-4 h-4 group-hover:scale-110 transition-transform" />
-              <span className="font-medium">{post.disliked}</span>
+              <span className="font-medium">{dislikedCount}</span>
             </Button>
           </div>
 
@@ -146,7 +167,7 @@ export function PostCard({ post, onPostUpdate }: PostCardProps) {
           >
             <MessageCircle className="w-4 h-4" />
             <span className="font-medium">
-              {Array.isArray(post.comments) && post.comments.length}
+              {Array.isArray(post.comments) ? post.comments.length : 0}
             </span>
             {showComments ? (
               <ChevronUp className="w-4 h-4" />
@@ -182,36 +203,27 @@ export function PostCard({ post, onPostUpdate }: PostCardProps) {
             </form>
 
             {Array.isArray(post.comments) && post.comments.length > 0 && (
-              <div className="space-y-3">
-                <h4 className="font-semibold text-sm text-gray-700 flex items-center gap-2">
-                  <MessageCircle className="w-4 h-4" />
-                  Comments ({post.comments.length})
-                </h4>
-                <div className="space-y-3 max-h-96 overflow-y-auto">
-                  {post.comments.map((comment) => (
-                    <div
-                      key={comment.id}
-                      className="bg-white rounded-lg p-4 shadow-sm border border-gray-200"
-                    >
-                      <div className="flex items-start space-x-3">
-                        {/* Avatar Circle with First Letter */}
-                        <div className="w-8 h-8 bg-gradient-to-r from-green-400 to-blue-500 rounded-full flex items-center justify-center text-white font-semibold text-sm shrink-0">
-                          {comment.content.charAt(0).toUpperCase()}
-                        </div>
-
-                        {/* Content + Timestamp */}
-                        <div className="flex flex-col">
-                          <p className="text-sm text-gray-800 whitespace-pre-wrap leading-relaxed">
-                            {comment.content}
-                          </p>
-                          <span className="text-xs text-muted-foreground mt-1">
-                            {formatDate(comment.createdAt)}
-                          </span>
-                        </div>
+              <div className="space-y-3 max-h-96 overflow-y-auto">
+                {post.comments.map((comment) => (
+                  <div
+                    key={comment.id}
+                    className="bg-white rounded-lg p-4 shadow-sm border border-gray-200"
+                  >
+                    <div className="flex items-start space-x-3">
+                      <div className="w-8 h-8 bg-gradient-to-r from-green-400 to-blue-500 rounded-full flex items-center justify-center text-white font-semibold text-sm shrink-0">
+                        {comment.content.charAt(0).toUpperCase()}
+                      </div>
+                      <div className="flex flex-col">
+                        <p className="text-sm text-gray-800 whitespace-pre-wrap leading-relaxed">
+                          {comment.content}
+                        </p>
+                        <span className="text-xs text-muted-foreground mt-1">
+                          {formatDate(comment.createdAt)}
+                        </span>
                       </div>
                     </div>
-                  ))}
-                </div>
+                  </div>
+                ))}
               </div>
             )}
           </div>
